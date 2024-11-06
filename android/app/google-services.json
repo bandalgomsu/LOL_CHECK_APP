@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "58365192123",
+    "project_id": "lol-check",
+    "storage_bucket": "lol-check.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58365192123:android:85cc0dbebe405578d8869e",
+        "android_client_info": {
+          "package_name": "com.example.lolcheck"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk7xt-IyfRvI4UH4MRFWb5fq_J8HeV4HQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
