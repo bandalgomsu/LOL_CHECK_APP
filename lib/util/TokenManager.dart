@@ -26,7 +26,7 @@ class TokenManager {
     await _storage.write(key: "refreshToken", value: refreshToken);
   }
 
-  Future<void> deleteToken() async {
+  Future<void> deleteAccessToken() async {
     await _storage.delete(key: "accessToken");
   }
 

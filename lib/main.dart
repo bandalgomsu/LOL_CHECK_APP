@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lolcheck/firebase_options.dart';
 import 'package:lolcheck/page/LoginPage.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Material Login Page',
+      navigatorKey: navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
         useMaterial3: true, // Material 3 적용

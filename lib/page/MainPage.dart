@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:lolcheck/Constant.dart';
+import 'package:lolcheck/page/MyInfoPage.dart';
 import 'package:lolcheck/page/SummonerDetailPage.dart';
-import 'package:lolcheck/util/TokenManager.dart';
+import 'package:lolcheck/util/ApiClient.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -16,58 +13,44 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   final TextEditingController _gameNameController = TextEditingController();
   final TextEditingController _tagLineController = TextEditingController();
+
   String? _errorMessage;
 
-  Future<void> fetchGameData() async {
+  Future<void> fetchGameData(BuildContext context) async {
     final gameName = _gameNameController.text;
     final tagLine = _tagLineController.text;
+    final ApiClient apiClient = ApiClient(context);
 
-    final url = Uri.parse('$baseUrl/api/v1/summoner').replace(queryParameters: {
+    final response =
+        await apiClient.dio.get('/api/v1/summoner', queryParameters: {
       'gameName': gameName,
       'tagLine': tagLine,
     });
 
-    try {
-      final accessToken = await TokenManager().getAccessToken();
+    if (response.statusCode == 200) {
+      final data = response.data;
 
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SummonerDetailsPage(
+            summonerName: data["gameName"],
+            tagLine: data["tagLine"],
+            recentGame: data?["updatedAt"].toString() ?? "x",
+            summonerId: data["summonerId"].toString(),
+          ),
+        ),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print(data.toString());
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SummonerDetailsPage(
-              summonerName: data["gameName"],
-              tagLine: data["tagLine"],
-              recentGame: data?["updatedAt"].toString() ?? "x",
-              summonerId: data["summonerId"].toString(),
-            ),
-          ),
-        );
-
-        // 성공적인 응답 시 에러 메시지 초기화
-        setState(() {
-          _errorMessage = null;
-        });
-      } else {
-        setState(() {
-          _errorMessage = '존재하지 않는 소환사입니다';
-        });
-        print('Failed to fetch data: ${response.statusCode}');
-      }
-    } catch (error) {
+      // 성공적인 응답 시 에러 메시지 초기화
       setState(() {
-        _errorMessage = '오류가 발생했습니다: $error';
+        _errorMessage = null;
       });
-      print('Error: $error');
+    } else {
+      setState(() {
+        _errorMessage = '존재하지 않는 소환사입니다';
+      });
+      print('Failed to fetch data: ${response.statusCode}');
     }
   }
 
@@ -76,6 +59,20 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('LOL CHECK'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.account_circle),
+            onPressed: () {
+              // '내 정보' 페이지로 이동하는 코드
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyInfoPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -109,7 +106,7 @@ class _MainPageState extends State<MainPage> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  fetchGameData();
+                  fetchGameData(context);
                 },
                 child: Text('Search'),
               ),
