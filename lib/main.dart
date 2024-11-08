@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lolcheck/firebase_options.dart';
-import 'package:lolcheck/page/LoginPage.dart';
+import 'package:lolcheck/page/SplashPage.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
         useMaterial3: true, // Material 3 적용
       ),
-      home: LoginPage(),
+      home: const SplashPage(),
     );
   }
 }

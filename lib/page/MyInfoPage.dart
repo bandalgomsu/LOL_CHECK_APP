@@ -21,11 +21,11 @@ class _MyInfoPageState extends State<MyInfoPage> {
 
   Future<void> fetchUnSubscribe(BuildContext context, int summonerId) async {
     final response =
-    await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
+        await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
 
     if (response.statusCode == 200) {
+      fetchGetSubscribedSummoners();
       setState(() {});
-      print("s");
     }
   }
 
@@ -51,7 +51,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
           child: Column(
             children: [
               Text(
-                "Subscribed Summoners",
+                "구독한 소환사",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Expanded(

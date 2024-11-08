@@ -4,15 +4,22 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lolcheck/page/MainPage.dart';
+import 'package:lolcheck/page/SignUpPage.dart';
 import 'package:lolcheck/util/TokenManager.dart';
 
 import '../Constant.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  LoginPage({super.key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  LoginPage({super.key});
+  String errorMessage = ''; // 오류 메시지를 저장할 변수
 
   Future<void> fetchLogin(BuildContext context) async {
     final email = emailController.text;
@@ -33,17 +40,20 @@ class LoginPage extends StatelessWidget {
         TokenManager().setRefreshToken(data['refreshToken']);
 
         await fetchSaveDevice();
-        Navigator.pushReplacement(
-          context,
+        Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainPage()),
+          (Route<dynamic> route) => false,
         );
       } else {
-        print('data : ${response}');
-        // 실패 응답 처d
-        print('Failed to fetch data: ${response.statusCode}');
+        setState(() {
+          errorMessage = '부정확한 이메일/패스워드 입니다';
+        });
       }
     } catch (error) {
       print('Error: $error');
+      setState(() {
+        errorMessage = '로그인 요청 중 오류가 발생했습니다';
+      });
     }
   }
 
@@ -64,9 +74,7 @@ class LoginPage extends StatelessWidget {
         body: jsonEncode({'deviceToken': fcmToken}),
       );
 
-      if (response.statusCode == 200) {
-      } else {
-        // 실패 응답 처d
+      if (response.statusCode != 200) {
         print('Failed to fetch data: ${response.body}');
       }
     } catch (error) {
@@ -103,6 +111,15 @@ class LoginPage extends StatelessWidget {
                 ),
                 obscureText: true,
               ),
+              SizedBox(height: 16.0),
+
+              // Error message
+              if (errorMessage.isNotEmpty)
+                Text(
+                  errorMessage,
+                  style: TextStyle(color: Colors.red),
+                ),
+
               SizedBox(height: 32.0),
               ElevatedButton(
                 onPressed: () {
@@ -111,9 +128,12 @@ class LoginPage extends StatelessWidget {
                 },
                 child: Text('로그인'),
               ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () {
-                  // 회원가입 버튼 기능 추가
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignUpPage()),
+                  );
                 },
                 child: Text('회원가입'),
               ),
