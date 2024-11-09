@@ -8,7 +8,7 @@ import '../util/TokenManager.dart';
 class SummonerDetailsPage extends StatefulWidget {
   final String summonerName;
   final String tagLine;
-  final String recentGame;
+  final DateTime recentGame;
   final String summonerId;
 
   SummonerDetailsPage({
@@ -87,7 +87,7 @@ class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
 
     if (!isSubscribed) {
       final response =
-      await apiClient.dio.post('/api/v1/subscribe/me/$summonerId');
+          await apiClient.dio.post('/api/v1/subscribe/me/$summonerId');
       if (response.statusCode == 200) {
         setState(() {
           isSubscribed = true;
@@ -100,7 +100,7 @@ class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
       }
     } else {
       final response =
-      await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
+          await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
 
       if (response.statusCode == 200) {
         setState(() {
@@ -134,33 +134,33 @@ class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
           child: isLoading
               ? CircularProgressIndicator()
               : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '소환사명: ${widget.summonerName}',
-                style:
-                TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                '태그: ${widget.tagLine}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              Text(
-                '최근 게임: ${widget.recentGame}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  fetchSubscribe(context);
-                },
-                child: Text(isSubscribed ? '구독 취소' : '구독하기'),
-              ),
-            ],
-          ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '소환사명: ${widget.summonerName}',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '태그: ${widget.tagLine}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '최근 게임: ${widget.recentGame}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        fetchSubscribe(context);
+                      },
+                      child: Text(isSubscribed ? '구독 취소' : '구독하기'),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

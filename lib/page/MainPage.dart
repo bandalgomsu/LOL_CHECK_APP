@@ -36,7 +36,7 @@ class _MainPageState extends State<MainPage> {
           builder: (context) => SummonerDetailsPage(
             summonerName: data["gameName"],
             tagLine: data["tagLine"],
-            recentGame: data?["updatedAt"].toString() ?? "x",
+            recentGame: DateTime.parse(data["updatedAt"]),
             summonerId: data["summonerId"].toString(),
           ),
         ),
