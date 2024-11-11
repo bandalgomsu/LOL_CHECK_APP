@@ -132,7 +132,7 @@ class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: isLoading
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,

@@ -14,10 +14,12 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  bool isLoading = false;
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController verificationCodeController =
-      TextEditingController();
+  TextEditingController();
 
   bool isVerificationSent = false;
   bool isResendEnabled = false;
@@ -59,6 +61,7 @@ class _SignUpPageState extends State<SignUpPage> {
     final email = emailController.text;
     final password = passwordController.text;
 
+    updateLoading();
     final url = Uri.parse('$baseUrl/api/v1/auth/signUp');
 
     try {
@@ -72,18 +75,21 @@ class _SignUpPageState extends State<SignUpPage> {
         TokenManager().setAccessToken(data['accessToken']);
         TokenManager().setRefreshToken(data['refreshToken']);
 
+        updateLoading();
         await fetchSaveDevice();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainPage()),
-          (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
         );
       } else {
         setState(() {
+          updateLoading();
           errorMessage = '회원가입 실패';
         });
       }
     } catch (error) {
       setState(() {
+        updateLoading();
         errorMessage = '회원가입 요청 중 오류가 발생했습니다';
       });
     }
@@ -93,7 +99,7 @@ class _SignUpPageState extends State<SignUpPage> {
     final url = Uri.parse('$baseUrl/api/v1/devices');
     final accessToken = await TokenManager().getAccessToken();
     final fcmToken =
-        await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
+    await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
 
     try {
       final response = await http.post(
@@ -111,6 +117,12 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (error) {
       print('Error: $error');
     }
+  }
+
+  void updateLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
   }
 
   @override
@@ -134,7 +146,8 @@ class _SignUpPageState extends State<SignUpPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
+          child: isLoading
+              ? const CircularProgressIndicator() : Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -160,7 +173,9 @@ class _SignUpPageState extends State<SignUpPage> {
               if (isVerificationSent) SizedBox(height: 8.0),
               if (isVerificationSent)
                 Text(
-                  '남은 시간: ${_countdown ~/ 60}:${(_countdown % 60).toString().padLeft(2, '0')}',
+                  '남은 시간: ${_countdown ~/ 60}:${(_countdown % 60)
+                      .toString()
+                      .padLeft(2, '0')}',
                   style: TextStyle(color: Colors.red),
                 ),
               SizedBox(height: 16.0),

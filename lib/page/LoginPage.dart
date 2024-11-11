@@ -17,6 +17,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool isLoading = false;
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String errorMessage = ''; // 오류 메시지를 저장할 변수
@@ -27,6 +29,8 @@ class _LoginPageState extends State<LoginPage> {
 
     // API의 엔드포인트 URL
     final url = Uri.parse('$baseUrl/api/v1/auth/login');
+
+    updateLoading();
 
     try {
       final response = await http.post(url,
@@ -42,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
         await fetchSaveDevice();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainPage()),
-          (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
         );
       } else {
         setState(() {
@@ -55,13 +59,14 @@ class _LoginPageState extends State<LoginPage> {
         errorMessage = '로그인 요청 중 오류가 발생했습니다';
       });
     }
+    updateLoading();
   }
 
   Future<void> fetchSaveDevice() async {
     final url = Uri.parse('$baseUrl/api/v1/devices');
     final accessToken = await TokenManager().getAccessToken();
     final fcmToken =
-        await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
+    await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
 
     try {
       print(accessToken);
@@ -80,6 +85,12 @@ class _LoginPageState extends State<LoginPage> {
     } catch (error) {
       print('Error: $error');
     }
+  }
+
+  void updateLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
   }
 
   @override

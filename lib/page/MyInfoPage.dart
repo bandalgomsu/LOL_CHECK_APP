@@ -8,6 +8,8 @@ class MyInfoPage extends StatefulWidget {
 }
 
 class _MyInfoPageState extends State<MyInfoPage> {
+  bool isLoading = true;
+
   final ApiClient apiClient = ApiClient(navigatorKey.currentContext!);
 
   // 구독 중인 소환사 목록과 상태 관리 (예시 데이터)
@@ -17,9 +19,11 @@ class _MyInfoPageState extends State<MyInfoPage> {
   void initState() {
     super.initState();
     fetchGetSubscribedSummoners();
+    updateLoading();
   }
 
   Future<void> fetchUnSubscribe(BuildContext context, int summonerId) async {
+    updateLoading();
     final response =
         await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
 
@@ -27,16 +31,25 @@ class _MyInfoPageState extends State<MyInfoPage> {
       fetchGetSubscribedSummoners();
       setState(() {});
     }
+
+    updateLoading();
   }
 
   Future<void> fetchGetSubscribedSummoners() async {
+    updateLoading();
     final response = await apiClient.dio.get('/api/v1/subscribe/me');
 
     if (response.statusCode == 200) {
       subscribedSummoners = await response.data;
-
-      setState(() {});
     }
+
+    updateLoading();
+  }
+
+  void updateLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
   }
 
   @override
@@ -48,35 +61,38 @@ class _MyInfoPageState extends State<MyInfoPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Text(
-                "구독한 소환사",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: subscribedSummoners.length,
-                  itemBuilder: (context, index) {
-                    final summoner = subscribedSummoners[index];
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8.0),
-                      child: ListTile(
-                        title: Text(summoner["summonerGameName"] +
-                            " #" +
-                            summoner["summonerTagLine"]),
-                        trailing: ElevatedButton(
-                          onPressed: () =>
-                              fetchUnSubscribe(context, summoner["summonerId"]),
-                          child: Text("구독 취소"),
-                        ),
+          child: isLoading
+              ? const CircularProgressIndicator()
+              : Column(
+                  children: [
+                    Text(
+                      "구독한 소환사",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: subscribedSummoners.length,
+                        itemBuilder: (context, index) {
+                          final summoner = subscribedSummoners[index];
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 8.0),
+                            child: ListTile(
+                              title: Text(summoner["summonerGameName"] +
+                                  " #" +
+                                  summoner["summonerTagLine"]),
+                              trailing: ElevatedButton(
+                                onPressed: () => fetchUnSubscribe(
+                                    context, summoner["summonerId"]),
+                                child: Text("구독 취소"),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );

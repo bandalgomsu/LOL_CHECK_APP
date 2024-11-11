@@ -11,6 +11,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  bool isLoading = false;
+
   final TextEditingController _gameNameController = TextEditingController();
   final TextEditingController _tagLineController = TextEditingController();
 
@@ -21,6 +23,7 @@ class _MainPageState extends State<MainPage> {
     final tagLine = _tagLineController.text;
     final ApiClient apiClient = ApiClient(context);
 
+    updateLoading();
     final response =
         await apiClient.dio.get('/api/v1/summoner', queryParameters: {
       'gameName': gameName,
@@ -52,6 +55,14 @@ class _MainPageState extends State<MainPage> {
       });
       print('Failed to fetch data: ${response.statusCode}');
     }
+
+    updateLoading();
+  }
+
+  void updateLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
   }
 
   @override
@@ -75,44 +86,46 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_errorMessage != null) // 에러 메시지가 있을 경우 표시
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              TextField(
-                controller: _gameNameController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Game Name',
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_errorMessage != null) // 에러 메시지가 있을 경우 표시
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    TextField(
+                      controller: _gameNameController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Game Name',
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: _tagLineController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Tag Line',
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        fetchGameData(context);
+                      },
+                      child: Text('Search'),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _tagLineController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Tag Line',
-                ),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  fetchGameData(context);
-                },
-                child: Text('Search'),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

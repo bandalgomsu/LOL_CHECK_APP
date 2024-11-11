@@ -3,7 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lolcheck/firebase_options.dart';
-import 'package:lolcheck/page/SplashPage.dart';
+import 'package:lolcheck/page/LoginPage.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
         useMaterial3: true, // Material 3 적용
       ),
-      home: const SplashPage(),
+      home: LoginPage(),
     );
   }
 }
