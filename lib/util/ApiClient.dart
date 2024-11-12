@@ -35,6 +35,7 @@ class ApiClient {
             _redirectToLogin();
           }
         }
+
         return handler.next(error);
       },
     ));

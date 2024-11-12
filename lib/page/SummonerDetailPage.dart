@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:lolcheck/Constant.dart';
+import 'package:lolcheck/main.dart';
 import 'package:lolcheck/util/ApiClient.dart';
-
-import '../util/TokenManager.dart';
 
 class SummonerDetailsPage extends StatefulWidget {
   final String summonerName;
@@ -26,8 +23,9 @@ class SummonerDetailsPage extends StatefulWidget {
 
 class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
   bool isSubscribed = false;
-  bool isLoading = true;
+  bool isLoading = false;
   String summonerId;
+  final ApiClient apiClient = ApiClient(navigatorKey.currentContext!);
 
   _SummonerDetailsPageState({
     required this.summonerId,
@@ -40,87 +38,64 @@ class _SummonerDetailsPageState extends State<SummonerDetailsPage> {
   }
 
   Future<void> fetchSubscriptionStatus() async {
-    final url = Uri.parse('$baseUrl/api/v1/subscribe/me/$summonerId');
+    updateLoading();
 
     try {
-      final accessToken = await TokenManager().getAccessToken();
-
-      setState(() {
-        isLoading = true;
-      });
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response =
+          await apiClient.dio.get('/api/v1/subscribe/me/$summonerId');
 
       if (response.statusCode == 200) {
         setState(() {
           isSubscribed = true;
-          isLoading = false;
         });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-        print('Failed to fetch subscription status: ${response.statusCode}');
       }
     } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      print('Error fetching subscription status: $error');
+      print('SUBSCRIPTION STATUS ERROR');
     }
+
+    updateLoading();
   }
 
   Future<void> fetchSubscribe(BuildContext context) async {
-    final url = Uri.parse('$baseUrl/api/v1/subscribe/me/$summonerId');
-    final accessToken = await TokenManager().getAccessToken();
-    final ApiClient apiClient = ApiClient(context);
+    updateLoading();
+    try {
+      if (!isSubscribed) {
+        final response =
+            await apiClient.dio.post('/api/v1/subscribe/me/$summonerId');
 
-    setState(() {
-      isLoading = true;
-    });
-
-    if (!isSubscribed) {
-      final response =
-          await apiClient.dio.post('/api/v1/subscribe/me/$summonerId');
-      if (response.statusCode == 200) {
-        setState(() {
-          isSubscribed = true;
-          isLoading = false;
-        });
+        if (response.statusCode == 200) {
+          setState(() {
+            isSubscribed = true;
+          });
+        }
       } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } else {
-      final response =
-          await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
+        final response =
+            await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
 
-      if (response.statusCode == 200) {
-        setState(() {
-          isSubscribed = false;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-        print('Failed to fetch subscription status: ${response.statusCode}');
+        if (response.statusCode == 200) {
+          setState(() {
+            isSubscribed = false;
+          });
+        }
       }
+    } catch (error) {
+      print("SUBSCRIBE ERROR");
     }
+
+    updateLoading();
+  }
+
+  void updateLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('소환사 정보'),
+        title: Text('Summoner Info'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {

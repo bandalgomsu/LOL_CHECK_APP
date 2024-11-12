@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lolcheck/page/MainPage.dart';
 import 'package:lolcheck/page/SignUpPage.dart';
+import 'package:lolcheck/util/ApiClient.dart';
 import 'package:lolcheck/util/TokenManager.dart';
 
 import '../Constant.dart';
@@ -43,10 +44,10 @@ class _LoginPageState extends State<LoginPage> {
         TokenManager().setAccessToken(data['accessToken']);
         TokenManager().setRefreshToken(data['refreshToken']);
 
-        await fetchSaveDevice();
+        await fetchSaveDevice(context);
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainPage()),
-              (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
         );
       } else {
         setState(() {
@@ -62,29 +63,17 @@ class _LoginPageState extends State<LoginPage> {
     updateLoading();
   }
 
-  Future<void> fetchSaveDevice() async {
-    final url = Uri.parse('$baseUrl/api/v1/devices');
-    final accessToken = await TokenManager().getAccessToken();
+  Future<void> fetchSaveDevice(BuildContext context) async {
+    final ApiClient apiClient = ApiClient(context);
+
+    await FirebaseMessaging.instance.deleteToken();
+
     final fcmToken =
-    await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
+        await FirebaseMessaging.instance.getToken(vapidKey: fcmKey);
 
-    try {
-      print(accessToken);
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: jsonEncode({'deviceToken': fcmToken}),
-      );
-
-      if (response.statusCode != 200) {
-        print('Failed to fetch data: ${response.body}');
-      }
-    } catch (error) {
-      print('Error: $error');
-    }
+    await apiClient.dio.delete('/api/v1/devices');
+    await apiClient.dio
+        .post('/api/v1/devices', data: {'deviceToken': fcmToken});
   }
 
   void updateLoading() {
@@ -97,59 +86,61 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('LOL_CHECK'),
+        title: Text('LOL CHECK'),
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 16.0),
+          child: isLoading
+              ? const CircularProgressIndicator()
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    SizedBox(height: 16.0),
+                    TextField(
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 16.0),
 
-              // Error message
-              if (errorMessage.isNotEmpty)
-                Text(
-                  errorMessage,
-                  style: TextStyle(color: Colors.red),
-                ),
+                    // Error message
+                    if (errorMessage.isNotEmpty)
+                      Text(
+                        errorMessage,
+                        style: TextStyle(color: Colors.red),
+                      ),
 
-              SizedBox(height: 32.0),
-              ElevatedButton(
-                onPressed: () {
-                  // 로그인 버튼 기능 추가
-                  fetchLogin(context);
-                },
-                child: Text('로그인'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignUpPage()),
-                  );
-                },
-                child: Text('회원가입'),
-              ),
-            ],
-          ),
+                    SizedBox(height: 32.0),
+                    ElevatedButton(
+                      onPressed: () {
+                        // 로그인 버튼 기능 추가
+                        fetchLogin(context);
+                      },
+                      child: Text('로그인'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignUpPage()),
+                        );
+                      },
+                      child: Text('회원가입'),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

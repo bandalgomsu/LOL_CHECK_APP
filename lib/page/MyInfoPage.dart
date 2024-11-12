@@ -24,25 +24,28 @@ class _MyInfoPageState extends State<MyInfoPage> {
 
   Future<void> fetchUnSubscribe(BuildContext context, int summonerId) async {
     updateLoading();
-    final response =
-        await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
+    try {
+      final response =
+          await apiClient.dio.delete('/api/v1/subscribe/me/$summonerId');
 
-    if (response.statusCode == 200) {
-      fetchGetSubscribedSummoners();
-      setState(() {});
+      if (response.statusCode == 200) {
+        fetchGetSubscribedSummoners();
+      }
+    } catch (error) {
+      print("UNSUBSCRIBE ERROR");
     }
-
     updateLoading();
   }
 
   Future<void> fetchGetSubscribedSummoners() async {
     updateLoading();
-    final response = await apiClient.dio.get('/api/v1/subscribe/me');
+    try {
+      final response = await apiClient.dio.get('/api/v1/subscribe/me');
 
-    if (response.statusCode == 200) {
-      subscribedSummoners = await response.data;
-    }
-
+      if (response.statusCode == 200) {
+        subscribedSummoners = await response.data;
+      }
+    } catch (error) {}
     updateLoading();
   }
 

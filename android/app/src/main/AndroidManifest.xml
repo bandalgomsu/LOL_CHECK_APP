@@ -9,7 +9,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="lolcheck">
+        android:label="LOL CHECK">
 
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"

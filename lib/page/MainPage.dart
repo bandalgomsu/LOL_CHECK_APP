@@ -23,37 +23,39 @@ class _MainPageState extends State<MainPage> {
     final tagLine = _tagLineController.text;
     final ApiClient apiClient = ApiClient(context);
 
-    updateLoading();
-    final response =
-        await apiClient.dio.get('/api/v1/summoner', queryParameters: {
-      'gameName': gameName,
-      'tagLine': tagLine,
-    });
-
-    if (response.statusCode == 200) {
-      final data = response.data;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SummonerDetailsPage(
-            summonerName: data["gameName"],
-            tagLine: data["tagLine"],
-            recentGame: DateTime.parse(data["updatedAt"]),
-            summonerId: data["summonerId"].toString(),
-          ),
-        ),
-      );
-
-      // 성공적인 응답 시 에러 메시지 초기화
-      setState(() {
-        _errorMessage = null;
+    try {
+      updateLoading();
+      final response =
+          await apiClient.dio.get('/api/v1/summoner', queryParameters: {
+        'gameName': gameName,
+        'tagLine': tagLine,
       });
-    } else {
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SummonerDetailsPage(
+              summonerName: data["gameName"],
+              tagLine: data["tagLine"],
+              recentGame: DateTime.parse(data["updatedAt"]),
+              summonerId: data["summonerId"].toString(),
+            ),
+          ),
+        );
+
+        // 성공적인 응답 시 에러 메시지 초기화
+        setState(() {
+          _errorMessage = null;
+        });
+      }
+    } catch (error) {
       setState(() {
         _errorMessage = '존재하지 않는 소환사입니다';
       });
-      print('Failed to fetch data: ${response.statusCode}');
+      print("GET SUMMONER ERROR");
     }
 
     updateLoading();
